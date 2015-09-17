@@ -1,12 +1,12 @@
 from __future__ import print_function
 import cgt
 import numpy as np
-from cgt.nn import parameter, init_array, Constant
+from cgt.nn import parameter, init_array, HeUniform, Constant
 
 # ignore bias for the sake of simplicity
 class FeedforwardCell(object):
     def __init__(self, input_size, output_size, name="", 
-            weight_init=Constant(0), bias_init=Constant(0)):
+            weight_init=HeUniform(1.0), bias_init=Constant(0)):
         """
         Initialize an Feedforward cell.
         """

@@ -1,12 +1,12 @@
 from __future__ import print_function
 import cgt
 import numpy as np
-from cgt.nn import parameter, init_array, Constant
+from cgt.nn import parameter, init_array, HeUniform
 
 # ignore bias for the sake of simplicity
 class RNNCell(object):
     def __init__(self, input_size, hidden_size, output_size, 
-            name="", weight_init=Constant(0)):
+            name="", weight_init=HeUniform(1.0)):
         """
         Initialize an RNN cell
         """
