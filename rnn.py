@@ -34,8 +34,10 @@ class RNNCell(object):
         out = next_h.dot(self.W_ho)
         return out, next_h
 
-x = cgt.matrix()
-h = cgt.matrix()
+# Make sure it compiles!
+
+x = cgt.matrix() # (batch_size, n_features)
+h = cgt.matrix() # this will later be the identity matrix
 
 o, next_h = RNNCell(5, 10, 5)(x, h)
 print("Output:", o, cgt.infer_shape(o))
