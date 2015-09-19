@@ -4,23 +4,41 @@ import cgt
 import numpy as np
 from cgt.nn import parameter, init_array, Constant, HeUniform
 
-# ignore bias for the sake of simplicity
+# Gate setup:
+#
+# * = matrix mult, . = elementwise mult
+#
+# hidden(t) = (1 - update(t)) * hidden(t-1) + update(t) * ~hidden(t)
+# ~hidden(t) = tanh(matrix * input + matrix * (reset(t) . hidden(t-1)))
+# update(t) =  sigmoid(matrix * input + matrix * hidden(t-1))
+# reset(t) = sigmoid(matrix * input + matrix * hidden(t-1))
+#
+# In the paper http://arxiv.org/pdf/1412.3555v1.pdf, 2014 Chung et. al
+#
+# z is used as notation for the update gate
+# r as notation for the reset gate
 class GRUCell(object):
-    def __init__(self, input_size, hidden_size, output_size, 
+    def __init__(self, input_size, hidden_size, output_size,
             name="", weight_init=HeUniform(1.0)):
         """
         Initialize an RNN cell
         """
+        # TODO: add bias
 
-        # input to hidden
-        self.W_xh = parameter(init_array(weight_init, (input_size, hidden_size)),
-                name=name+".W_xh")
-        # hidden to hidden
-        self.W_hh = parameter(init_array(weight_init, (hidden_size, hidden_size)),
-                name=name+".W_hh")
-        # hidden to output
-        self.W_ho = parameter(init_array(weight_init, (hidden_size, output_size)),
-                name=name+".W_ho")
+        # reset gate
+        self.W_xr = parameter(init_array(weight_init, (input_size, hidden_size)), name=name+".W_input_to_reset")
+        self.W_hr = parameter(init_array(weight_init, (hidden_size, hidden_size)), name=name+"W_hidden_to_reset")
+
+        # update gate
+        self.W_xz = parameter(init_array(weight_init, (input_size, hidden_size)), name=name+".W_input_to_update")
+        self.W_hz = parameter(init_array(weight_init, (hidden_size, hidden_size)), name=name+"W_hidden_to_update")
+
+        # ~hidden is the candidate activation, so we'll denote it as c
+        self.W_xc = parameter(init_array(weight_init, (input_size, hidden_size)), name=name+".W_input_to_candidate")
+        self.W_hc = parameter(init_array(weight_init, (hidden_size, hidden_size)), name=name+"W_hidden_to_candidate")
+
+
+
 
     def __call__(self, x, h):
         """
@@ -30,9 +48,20 @@ class GRUCell(object):
         Returns (out, next_h). Feed out into the next layer and
         next_h to the next timestep.
         """
-        # should this an an elementwise add?
-        next_h = cgt.tanh(cgt.add(h.dot(self.W_hh), x.dot(self.W_xh)))
-        out = next_h.dot(self.W_ho)
+
+        reset_gate = cgt.sigmoid(x.dot(self.W_xr) + h.dot(self.W_hr))
+        update_gate = cgt.sigmoid(x.dot(self.W_xz) + h.dot(self.W_hz))
+
+        # the elementwise multiplication here tells what of the previous
+        # input we should forget.
+        forget_gate = reset_gate * h
+
+        # this part is very similar to vanilla RNN
+        next_h = cgt.tanh(x.dot(self.W_xc) + h.dot(forget_gate))
+        out = (1 - update_gate) * h + update_gate * next_h
+
+        # next_h = cgt.tanh(cgt.add(h.dot(self.W_hh), x.dot(self.W_xh)))
+        # out = next_h.dot(self.W_ho)
         return out, next_h
 
 # Make sure it compiles!
@@ -43,5 +72,3 @@ h = cgt.matrix() # this will later be the identity matrix
 o, next_h = GRUCell(5, 10, 5)(x, h)
 print("Output:", o, cgt.infer_shape(o))
 print("Next Hidden:", next_h, cgt.infer_shape(next_h))
-
-

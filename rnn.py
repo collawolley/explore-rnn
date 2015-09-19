@@ -5,7 +5,7 @@ from cgt.nn import parameter, init_array, HeUniform
 
 # ignore bias for the sake of simplicity
 class RNNCell(object):
-    def __init__(self, input_size, hidden_size, output_size, 
+    def __init__(self, input_size, hidden_size, output_size,
             name="", weight_init=HeUniform(1.0)):
         """
         Initialize an RNN cell
@@ -13,13 +13,13 @@ class RNNCell(object):
 
         # input to hidden
         self.W_xh = parameter(init_array(weight_init, (input_size, hidden_size)),
-                name=name+".W_xh")
+                name=name+".W_input_to_hidden")
         # hidden to hidden
         self.W_hh = parameter(init_array(weight_init, (hidden_size, hidden_size)),
-                name=name+".W_hh")
+                name=name+".W_hidden_to_hidden")
         # hidden to output
         self.W_ho = parameter(init_array(weight_init, (hidden_size, output_size)),
-                name=name+".W_ho")
+                name=name+".W_hidden_to_output")
 
     def __call__(self, x, h):
         """
@@ -30,7 +30,7 @@ class RNNCell(object):
         next_h to the next timestep.
         """
         # should this an an elementwise add?
-        next_h = cgt.tanh(cgt.add(h.dot(self.W_hh), x.dot(self.W_xh)))
+        next_h = cgt.tanh(h.dot(self.W_hh) + x.dot(self.W_xh))
         out = next_h.dot(self.W_ho)
         return out, next_h
 
@@ -42,5 +42,3 @@ h = cgt.matrix() # this will later be the identity matrix
 o, next_h = RNNCell(5, 10, 5)(x, h)
 print("Output:", o, cgt.infer_shape(o))
 print("Next Hidden:", next_h, cgt.infer_shape(next_h))
-
-
