@@ -29,7 +29,7 @@ class RNNCell(object):
         Returns (out, next_h). Feed out into the next layer and
         next_h to the next timestep.
         """
-        # should this an an elementwise add?
+
         next_h = cgt.tanh(h.dot(self.W_hh) + x.dot(self.W_xh))
         out = next_h.dot(self.W_ho)
         return out, next_h
