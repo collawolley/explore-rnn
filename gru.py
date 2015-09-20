@@ -13,18 +13,16 @@ from cgt.nn import parameter, init_array, Constant, HeUniform
 # update(t) =  sigmoid(matrix * input + matrix * hidden(t-1))
 # reset(t) = sigmoid(matrix * input + matrix * hidden(t-1))
 #
-# Chung, Junyoung, et al.
-# "Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling."
-# arXiv preprint arXiv:1412.3555 (2014).
-#
-# In the above paper:
-# z is used as notation for the update gate
-# r as notation for the reset gate
 class GRUCell(object):
-    def __init__(self, input_size, hidden_size, output_size,
-            name="", weight_init=HeUniform(1.0)):
+    def __init__(self, input_size, hidden_size, name="", weight_init=HeUniform(1.0)):
         """
-        Initialize an RNN cell
+        Chung, Junyoung, et al.
+        "Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling."
+        arXiv preprint arXiv:1412.3555 (2014).
+
+        In the above paper:
+            z is used as notation for the update gate
+            r as notation for the reset gate
         """
         # TODO: bias
         # The paper makes no mention of bias in equations or text.
@@ -43,33 +41,34 @@ class GRUCell(object):
         self.W_hc = parameter(init_array(weight_init, (hidden_size, hidden_size)), name=name+"W_hidden_to_candidate")
 
 
-    def __call__(self, x, h):
+    def __call__(self, x, prev_h):
         """
         x is the input
-        h is the input from the previous timestep
+        prev_h is the input from the previous timestep
 
-        Returns (out, next_h). Feed out into the next layer and
-        next_h to the next timestep.
+        Returns (next_h, next_h). For the GRU the output to the next timestep
+        and next layer is one and the same.
         """
 
-        reset_gate = cgt.sigmoid(x.dot(self.W_xr) + h.dot(self.W_hr))
-        update_gate = cgt.sigmoid(x.dot(self.W_xz) + h.dot(self.W_hz))
+        reset_gate = cgt.sigmoid(x.dot(self.W_xr) + prev_h.dot(self.W_hr))
+        update_gate = cgt.sigmoid(x.dot(self.W_xz) + prev_h.dot(self.W_hz))
 
         # the elementwise multiplication here tells what of the previous
         # input we should forget.
-        forget_gate = reset_gate * h
+        forget_gate = reset_gate * prev_h
 
         # this part is very similar to vanilla RNN
-        next_h = cgt.tanh(x.dot(self.W_xc) + h.dot(forget_gate))
-        out = (1 - update_gate) * h + update_gate * next_h
+        h_candidate = cgt.tanh(x.dot(self.W_xc) + prev_h.dot(forget_gate))
+        # this isn't super clear in the paper just it's an elementwise mult here
+        next_h = (1. - update_gate) * h + update_gate * h_candidate
 
-        return out, next_h
+        return next_h, next_h
 
 # Make sure it compiles!
 
 x = cgt.matrix() # (batch_size, n_features)
 h = cgt.matrix() # this will later be the identity matrix
 
-o, next_h = GRUCell(5, 10, 5)(x, h)
+o, next_h = GRUCell(5, 10)(x, h)
 print("Output:", o, cgt.infer_shape(o))
 print("Next Hidden:", next_h, cgt.infer_shape(next_h))
