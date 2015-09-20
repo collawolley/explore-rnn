@@ -21,16 +21,16 @@ class RNNCell(object):
         self.W_ho = parameter(init_array(weight_init, (hidden_size, output_size)),
                 name=name+".W_hidden_to_output")
 
-    def __call__(self, x, h):
+    def __call__(self, x, prev_h):
         """
         x is the input
-        h is the input from the previous timestep
+        prev_h is the input from the previous timestep
 
         Returns (out, next_h). Feed out into the next layer and
         next_h to the next timestep.
         """
 
-        next_h = cgt.tanh(h.dot(self.W_hh) + x.dot(self.W_xh))
+        next_h = cgt.tanh(prev_h.dot(self.W_hh) + x.dot(self.W_xh))
         out = next_h.dot(self.W_ho)
         return out, next_h
 
