@@ -62,7 +62,10 @@ class GRUCell(object):
         # this isn't super clear in the paper just it's an elementwise mult here
         next_h = (1. - update_gate) * h + update_gate * h_candidate
 
-        return next_h, next_h
+        # In a standard GRU cell we only have 1 output.
+        # However, it should be be copied and feed to
+        # both the next timestep and the next layer
+        return next_h
 
 # Make sure it compiles!
 
