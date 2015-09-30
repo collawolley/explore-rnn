@@ -1,4 +1,3 @@
-# TODO: implement this, still just normal RNN cell.
 from __future__ import print_function
 import cgt
 import numpy as np
@@ -46,8 +45,8 @@ class GRUCell(object):
         x is the input
         prev_h is the input from the previous timestep
 
-        Returns (next_h, next_h). For the GRU the output to the next timestep
-        and next layer is one and the same.
+        Returns next_h. For the GRU the output to the next timestep
+        and next layer is one and the same. Copy it first!
         """
 
         reset_gate = cgt.sigmoid(x.dot(self.W_xr) + prev_h.dot(self.W_hr))
@@ -72,6 +71,5 @@ class GRUCell(object):
 x = cgt.matrix() # (batch_size, n_features)
 h = cgt.matrix() # this will later be the identity matrix
 
-o, next_h = GRUCell(5, 10)(x, h)
-print("Output:", o, cgt.infer_shape(o))
+next_h = GRUCell(5, 10)(x, h)
 print("Next Hidden:", next_h, cgt.infer_shape(next_h))
