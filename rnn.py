@@ -3,23 +3,23 @@ import cgt
 import numpy as np
 from cgt.nn import parameter, init_array, HeUniform
 
-# ignore bias for the sake of simplicity
 class RNNCell(object):
-    def __init__(self, input_size, hidden_size, output_size,
-            name="", weight_init=HeUniform(1.0)):
+    def __init__(self, input_size, hidden_size, name="", weight_init=HeUniform(1.0)):
         """
         Initialize an RNN cell
         """
 
         # input to hidden
         self.W_xh = parameter(init_array(weight_init, (input_size, hidden_size)),
-                name=name+".W_input_to_hidden")
+            name=name+".W_xh")
+
         # hidden to hidden
         self.W_hh = parameter(init_array(weight_init, (hidden_size, hidden_size)),
-                name=name+".W_hidden_to_hidden")
+            name=name+".W_hh")
+
         # hidden to output
-        self.W_ho = parameter(init_array(weight_init, (hidden_size, output_size)),
-                name=name+".W_hidden_to_output")
+        self.W_ho = parameter(init_array(weight_init, (hidden_size, hidden_size)),
+            name=name+".W_ho")
 
     def __call__(self, x, prev_h):
         """
@@ -39,6 +39,6 @@ class RNNCell(object):
 x = cgt.matrix() # (batch_size, n_features)
 h = cgt.matrix() # this will later be the identity matrix
 
-o, next_h = RNNCell(5, 10, 5)(x, h)
+o, next_h = RNNCell(5, 10)(x, h)
 print("Output:", o, cgt.infer_shape(o))
 print("Next Hidden:", next_h, cgt.infer_shape(next_h))
