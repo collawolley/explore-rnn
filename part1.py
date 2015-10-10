@@ -32,33 +32,29 @@ rnn(xt, prev_h)
 # forget gate
 W_xf = np.random.randn(input_size, hidden_size)
 W_hf = np.random.randn(hidden_size, hidden_size)
-b_xf = np.ones(hidden_size).reshape(-1, 1)
-b_hf = np.ones(hidden_size).reshape(-1, 1)
+b_f = np.ones(hidden_size).reshape(-1, 1)
 
 # input gate
 W_xi = np.random.randn(input_size, hidden_size)
 W_hi = np.random.randn(hidden_size, hidden_size)
-b_xi = np.ones(hidden_size).reshape(-1, 1)
-b_hi = np.ones(hidden_size).reshape(-1, 1)
+b_i = np.ones(hidden_size).reshape(-1, 1)
 
 # output gate
 W_xo = np.random.randn(input_size, hidden_size)
 W_ho = np.random.randn(hidden_size, hidden_size)
-b_xo = np.ones(hidden_size).reshape(-1, 1)
-b_ho = np.ones(hidden_size).reshape(-1, 1)
+b_o = np.ones(hidden_size).reshape(-1, 1)
 
 # candidate memory state
 W_xc = np.random.randn(input_size, hidden_size)
 W_hc = np.random.randn(hidden_size, hidden_size)
-b_xc = np.ones(hidden_size).reshape(-1, 1)
-b_hc = np.ones(hidden_size).reshape(-1, 1)
+b_c = np.ones(hidden_size).reshape(-1, 1)
 
 def lstm(xt, prev_c, prev_h):
-	ft = sigmoid(xt.dot(W_xf) + prev_h.dot(W_hf) +  b_xf + b_hf)
-	it = sigmoid(xt.dot(W_xi) + prev_h.dot(W_hi) +  b_xi + b_hi)
-	ot = sigmoid(xt.dot(W_xo) + prev_h.dot(W_ho) +  b_xo + b_ho)
+	ft = sigmoid(xt.dot(W_xf) + prev_h.dot(W_hf) +  b_f)
+	it = sigmoid(xt.dot(W_xi) + prev_h.dot(W_hi) +  b_i)
+	ot = sigmoid(xt.dot(W_xo) + prev_h.dot(W_ho) +  b_o)
 
-	candidate_memory = np.tanh(xt.dot(W_xc) + prev_h.dot(W_hc) +  b_xc + b_hc)
+	candidate_memory = np.tanh(xt.dot(W_xc) + prev_h.dot(W_hc) +  b_c)
 	ct = ft * prev_c + it * candidate_memory
 	ht = ot * np.tanh(ct)
 
